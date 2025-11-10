@@ -41,9 +41,9 @@ def main():
             except ValueError:
                 print("Wprowadź liczbę.")
 
-    # Read Excel
+    # Read Excel - tylko pierwsza zakładka
     try:
-        df = pd.read_excel(chosen_file)
+        df = pd.read_excel(chosen_file, sheet_name=0)
     except Exception as e:
         print(f"Błąd podczas odczytu pliku: {e}")
         return

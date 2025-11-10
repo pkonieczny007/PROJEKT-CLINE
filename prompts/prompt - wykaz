@@ -1,0 +1,15 @@
+Utworz skrypt python, ktory z pliku xlsx lub xlsm ktory jest w folderze uruchomienia skryptu (gdy jest wiecej niż 1 pyta o plik do wskazania)
+tworzy plik i zapisuje pod nazwą:
+wykaz.xlsx 
+
+kopiuje kolumny 
+Abmess_1	ME	Abmes_2	Zeinr ZAKUPY Nazwa
+
+UWAGA: gdy nie ma Nazwa (może być NAZWA)
+
+kolumny kopiuje na podstawie kolumny ZAKUPY, jeżeli jest: blacha (lub BLACHA, Blacha)
+
+dodatkowo sprawdza:
+Abmess_1 i Abmes_2 - jeżeli wartość ma kropkę usuwa ją np.       1.615,000
+zamienia na 1615 usuwając kropkę 
+

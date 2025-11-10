@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Scripts Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .scripts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .script-card {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .script-card:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .script-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .script-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-run {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-run:hover {
+            background: #218838;
+        }
+        
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .btn-info:hover {
+            background: #138496;
+        }
+        
+        .output-section {
+            margin-top: 30px;
+            display: none;
+        }
+        
+        .output-section.active {
+            display: block;
+        }
+        
+        .output-header {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            border-radius: 8px 8px 0 0;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .output-content {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 0 0 8px 8px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .success {
+            color: #28a745;
+        }
+        
+        .error {
+            color: #dc3545;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #666;
+        }
+        
+        .close-output {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .close-output:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .stats {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .stats-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐍 Python Scripts Manager</h1>
+        <p class="subtitle">Zarządzaj i uruchamiaj swoje skrypty Python</p>
+        
+        <div class="stats">
+            <div class="stats-number">{{ scripts|length }}</div>
+            <div>Dostępnych skryptów</div>
+        </div>
+        
+        {% if scripts %}
+        <div class="scripts-grid">
+            {% for script in scripts %}
+            <div class="script-card">
+                <div class="script-name">📄 {{ script }}</div>
+                <div class="script-actions">
+                    <button class="btn-run" onclick="runScript('{{ script }}')">▶ Uruchom</button>
+                    <button class="btn-info" onclick="showInfo('{{ script }}')">ℹ Info</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="loading">
+            Brak dostępnych skryptów Python w tym katalogu.
+        </div>
+        {% endif %}
+        
+        <div id="output" class="output-section">
+            <div class="output-header">
+                <span id="output-title">Wynik</span>
+                <button class="close-output" onclick="closeOutput()">✕ Zamknij</button>
+            </div>
+            <div id="output-content" class="output-content"></div>
+        </div>
+    </div>
+    
+    <script>
+        function showOutput(title, content, isError = false) {
+            const outputSection = document.getElementById('output');
+            const outputTitle = document.getElementById('output-title');
+            const outputContent = document.getElementById('output-content');
+            
+            outputTitle.textContent = title;
+            outputContent.innerHTML = content;
+            outputSection.classList.add('active');
+            outputSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function closeOutput() {
+            document.getElementById('output').classList.remove('active');
+        }
+        
+        async function runScript(scriptName) {
+            showOutput('⏳ Uruchamianie: ' + scriptName, 'Proszę czekać...');
+            
+            try {
+                const response = await fetch(`/api/run/${scriptName}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ args: [] })
+                });
+                
+                const data = await response.json();
+                
+                let output = '';
+                if (data.success) {
+                    output = '<span class="success">✓ Skrypt wykonany pomyślnie!</span>\n\n';
+                } else {
+                    output = '<span class="error">✗ Skrypt zakończony z błędem (kod: ' + data.returncode + ')</span>\n\n';
+                }
+                
+                if (data.stdout) {
+                    output += '<strong>STDOUT:</strong>\n' + escapeHtml(data.stdout) + '\n\n';
+                }
+                
+                if (data.stderr) {
+                    output += '<strong class="error">STDERR:</strong>\n' + escapeHtml(data.stderr);
+                }
+                
+                if (!data.stdout && !data.stderr) {
+                    output += 'Brak wyjścia.';
+                }
+                
+                showOutput('✓ Wynik: ' + scriptName, output, !data.success);
+                
+            } catch (error) {
+                showOutput('✗ Błąd: ' + scriptName, 
+                    '<span class="error">Błąd połączenia: ' + escapeHtml(error.message) + '</span>', true);
+            }
+        }
+        
+        async function showInfo(scriptName) {
+            showOutput('📊 Informacje: ' + scriptName, 'Ładowanie...');
+            
+            try {
+                const response = await fetch(`/api/info/${scriptName}`);
+                const data = await response.json();
+                
+                let info = `<strong>Nazwa:</strong> ${data.name}\n`;
+                info += `<strong>Rozmiar:</strong> ${data.size} bajtów\n\n`;
+                info += `<strong>Podgląd (pierwsze 20 linii):</strong>\n`;
+                info += escapeHtml(data.preview);
+                
+                showOutput('📊 Info: ' + scriptName, info);
+                
+            } catch (error) {
+                showOutput('✗ Błąd', 
+                    '<span class="error">Nie można pobrać informacji: ' + escapeHtml(error.message) + '</span>', true);
+            }
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

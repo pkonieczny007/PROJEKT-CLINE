@@ -43,10 +43,23 @@ def main():
 
     # Read Excel - tylko pierwsza zakładka
     try:
+        # Spróbuj odczytać pierwszą zakładkę
         df = pd.read_excel(chosen_file, sheet_name=0)
     except Exception as e:
-        print(f"Błąd podczas odczytu pliku: {e}")
-        return
+        print(f"Błąd podczas odczytu pierwszej zakładki: {e}")
+        try:
+            # Jeśli nie działa, odczytaj wszystkie i weź pierwszą
+            sheets = pd.read_excel(chosen_file, sheet_name=None)
+            if sheets:
+                first_sheet_name = list(sheets.keys())[0]
+                df = sheets[first_sheet_name]
+                print(f"Odczytano zakładkę: {first_sheet_name}")
+            else:
+                print("Brak zakładek w pliku.")
+                return
+        except Exception as e2:
+            print(f"Błąd podczas odczytu pliku: {e2}")
+            return
 
     # Find Nazwa column
     nazwa_col = None
